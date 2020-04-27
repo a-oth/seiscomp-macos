@@ -20,3 +20,4 @@
 /src/extras/*
 !/src/extras/CMakeLists.txt
 !/src/extras/README
+.DS_Store

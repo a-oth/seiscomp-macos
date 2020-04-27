@@ -32,13 +32,21 @@ OPTION(SC_GLOBAL_PYTHON_WRAPPER_NUMPY "Add Numpy support for Python wrapper" ON)
 OPTION(SC_GLOBAL_PYTHON_WRAPPER_PYTHON3 "Require Python3 interpreter" OFF)
 OPTION(SC_ENABLE_CONTRIB "Enables descending into the contrib directory" ON)
 
-IF(SC_GLOBAL_PYTHON_WRAPPER_PYTHON3)
-	SET(PythonInterp_FIND_VERSION 3)
-	SET(PythonInterp_FIND_VERSION_MAJOR 3)
-	SET(PythonInterp_FIND_VERSION_EXACT 0)
-ENDIF()
+#FIND_PACKAGE(PythonInterp)
 
-FIND_PACKAGE(PythonInterp)
+IF (APPLE)
+    # Set Homebrew's Python3 variables
+    #SET(PYTHON_CONFIG_EXECUTABLE /usr/local/bin/python3-config)
+    FIND_PACKAGE (Python3 COMPONENTS Interpreter Development)
+    #find_package(PythonInterp)
+    #SET(PYTHON_EXECUTABLE /usr/local/bin/python3)
+    #SET(PYTHON_INCLUDE_DIR /usr/local/Frameworks/Python.framework/Versions/Current/include/python3.7m/)
+    #SET(PYTHON_LIBRARY     /usr/local/Frameworks/Python.framework/Versions/Current/lib/python3.7/)
+    #FIND_PACKAGE (Python3 COMPONENTS Interpreter Development)
+ELSE (APPLE)
+    FIND_PACKAGE(PythonInterp)
+ENDIF (APPLE)    
+
 EXEC_PROGRAM(
 	${PYTHON_EXECUTABLE}
 	ARGS "-c \"from __future__ import print_function;import sys;print(sys.version[:3])\""
@@ -49,12 +57,18 @@ IF(SC_GLOBAL_PYTHON_WRAPPER_NUMPY)
 	FIND_PACKAGE(Numpy)
 ENDIF()
 
-IF (APPLE)
-	FIND_PACKAGE(PythonLibsApple REQUIRED)
-ELSE (APPLE)
-	FIND_PACKAGE(PythonLibs REQUIRED)
-ENDIF (APPLE)
-FIND_PACKAGE(PythonInterp REQUIRED)
+#IF (APPLE)
+#	FIND_PACKAGE(PythonLibsApple REQUIRED)
+#ELSE (APPLE)
+#	FIND_PACKAGE(PythonLibs REQUIRED)
+#ENDIF (APPLE)
+
+IF (SC_GLOBAL_PYTHON_WRAPPER)
+    FIND_PACKAGE(PythonLibs REQUIRED)
+	FIND_PACKAGE(PythonInterp REQUIRED)
+ENDIF (SC_GLOBAL_PYTHON_WRAPPER)
+
+#FIND_PACKAGE(PythonInterp REQUIRED)
 SET(PYTHON_LIBRARY_SUFFIX /python)
 SET(PYTHON_LIBRARY_PATH lib${PYTHON_LIBRARY_SUFFIX})
 
@@ -147,6 +161,59 @@ IF (CMAKE_COMPILER_IS_GNUCC)
 		SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 	ENDIF(NOT GCC_VERSION VERSION_LESS "4.7")
 ENDIF (CMAKE_COMPILER_IS_GNUCC)
+
+
+# Set some specific settings for Mac OS X - macOS - Darwin
+#
+IF (APPLE)
+    
+    set(CMAKE_OSX_ARCHITECTURES "x86_64")
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13.0" CACHE STRING "")
+    
+    # OpenSSL with Homebrew
+	FIND_PACKAGE(OpenSSL REQUIRED)
+		        
+    # Set RPATH for Mac OS X - Darwin
+    SET(CMAKE_MACOSX_RPATH ON)
+    
+    # use, i.e. don't skip the full RPATH for the build tree
+    SET(CMAKE_SKIP_BUILD_RPATH FALSE)
+    
+    # when building, don't use the install RPATH already
+    # (but later on when installing)
+    SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
+
+    # add the automatically determined parts of the RPATH
+    # which point to directories outside the build tree to the install RPATH
+    SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+    # the RPATH to be used when installing, but only if it's not a system directory
+    LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
+    IF("${isSystemDir}" STREQUAL "-1")
+        SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+    ENDIF("${isSystemDir}" STREQUAL "-1")
+    
+	SET(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib")
+		
+	# Use clang compiler
+	IF (NOT DEFINED CMAKE_CXX_COMPILER)
+		SET(CMAKE_CXX_COMPILER "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++")
+		IF (NOT EXISTS "${CMAKE_CXX_COMPILER}")
+			SET(CMAKE_CXX_COMPILER "clang++")
+		ENDIF(NOT EXISTS "${CMAKE_CXX_COMPILER}")
+	ENDIF(NOT DEFINED CMAKE_CXX_COMPILER)
+	
+	IF (NOT DEFINED CMAKE_C_COMPILER)
+		SET(CMAKE_C_COMPILER "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang")
+		IF (NOT EXISTS "${CMAKE_C_COMPILER}")
+			SET(CMAKE_C_COMPILER "clang")
+		ENDIF(NOT EXISTS "${CMAKE_C_COMPILER}")
+	ENDIF(NOT DEFINED CMAKE_C_COMPILER)
+	
+	# clang defaults to C++14 which might break compilation. Setting to C++11 works.
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wno-deprecated-declarations")
+	
+ENDIF (APPLE)
 
 # Set the platform specific suffix for dynamic libraries
 ADD_DEFINITIONS(
