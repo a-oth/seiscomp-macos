@@ -34,18 +34,36 @@ OPTION(SC_ENABLE_CONTRIB "Enables descending into the contrib directory" ON)
 
 #FIND_PACKAGE(PythonInterp)
 
+# Modified by Adrien Oth <adrien.oth@ecgs.lu>
+# Find python interpreter, macOS support
 IF (APPLE)
-    # Set Homebrew's Python3 variables
-    #SET(PYTHON_CONFIG_EXECUTABLE /usr/local/bin/python3-config)
-    FIND_PACKAGE (Python3 COMPONENTS Interpreter Development)
-    #find_package(PythonInterp)
-    #SET(PYTHON_EXECUTABLE /usr/local/bin/python3)
-    #SET(PYTHON_INCLUDE_DIR /usr/local/Frameworks/Python.framework/Versions/Current/include/python3.7m/)
-    #SET(PYTHON_LIBRARY     /usr/local/Frameworks/Python.framework/Versions/Current/lib/python3.7/)
-    #FIND_PACKAGE (Python3 COMPONENTS Interpreter Development)
+    # To avoid picking up the system elements pre-maturely
+    SET(CMAKE_FIND_FRAMEWORK LAST)
+    IF (Python_VERSION_REQUIRED)
+       FIND_PACKAGE(Python ${Python_VERSION_REQUIRED} EXACT REQUIRED COMPONENTS Interpreter)
+    ELSE (Python_VERSION_REQUIRED)
+       FIND_PACKAGE(Python REQUIRED COMPONENTS Interpreter)
+    ENDIF (Python_VERSION_REQUIRED)
+
+    SET(PYTHON_EXECUTABLE ${Python_EXECUTABLE})
 ELSE (APPLE)
     FIND_PACKAGE(PythonInterp)
-ENDIF (APPLE)    
+ENDIF (APPLE)  
+
+# Modified by Gilles Celli <gilles.celli@ecgs.lu>
+# Alternative to above IF (APPLE) block using fixed Homebrew version of python 3.7
+#IF (APPLE)
+#    # Set Homebrew's Python3 variables
+#    #SET(PYTHON_CONFIG_EXECUTABLE /usr/local/bin/python3-config)
+#    FIND_PACKAGE (Python COMPONENTS Interpreter Development)
+#    #find_package(PythonInterp)
+#    #SET(PYTHON_EXECUTABLE /usr/local/bin/python3)
+#    #SET(PYTHON_INCLUDE_DIR /usr/local/Frameworks/Python.framework/Versions/Current/include/python3.7m/)
+#    #SET(PYTHON_LIBRARY     /usr/local/Frameworks/Python.framework/Versions/Current/lib/python3.7/)
+#    #FIND_PACKAGE (Python3 COMPONENTS Interpreter Development)
+#ELSE (APPLE)
+#    FIND_PACKAGE(PythonInterp)
+#ENDIF (APPLE)    
 
 EXEC_PROGRAM(
 	${PYTHON_EXECUTABLE}
@@ -63,9 +81,26 @@ ENDIF()
 #	FIND_PACKAGE(PythonLibs REQUIRED)
 #ENDIF (APPLE)
 
+# Modified by Adrien Oth <adrien.oth@ecgs.lu>
+# Support for finding python on macOS, possibility to pass fixed version desired to be used
 IF (SC_GLOBAL_PYTHON_WRAPPER)
-    FIND_PACKAGE(PythonLibs REQUIRED)
-	FIND_PACKAGE(PythonInterp REQUIRED)
+    IF (APPLE)
+       # To avoid picking up the system elements pre-maturely
+       SET(CMAKE_FIND_FRAMEWORK LAST)
+       IF (Python_VERSION_REQUIRED)
+          FIND_PACKAGE(Python ${Python_VERSION_REQUIRED} EXACT REQUIRED COMPONENTS Interpreter Development)
+       ELSE (Python_VERSION_REQUIRED)
+          FIND_PACKAGE(Python REQUIRED COMPONENTS Interpreter Development)
+       ENDIF (Python_VERSION_REQUIRED)
+       
+       SET(PYTHON_LIBRARIES ${Python_LIBRARY})
+       SET(PYTHON_INCLUDE_PATH ${Python_INCLUDE_DIRS})
+       SET(PYTHON_INCLUDE_DIR ${Python_INCLUDE_DIRS})
+       SET(PYTHON_EXECUTABLE ${Python_EXECUTABLE})
+    ELSE (APPLE)
+       FIND_PACKAGE(PythonLibs REQUIRED)
+	   FIND_PACKAGE(PythonInterp REQUIRED)
+	ENDIF (APPLE)
 ENDIF (SC_GLOBAL_PYTHON_WRAPPER)
 
 #FIND_PACKAGE(PythonInterp REQUIRED)
