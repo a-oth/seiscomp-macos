@@ -1,136 +1,264 @@
-# SeisComP
+# SeisComP for macOS port
 
-## About
+This is the ported version of SeisComP for Mac OS X / macOS.
 
-SeisComP is a seismological software for data acquisition, processing,
-distribution and interactive analysis that has been developed by the
-GEOFON Program at  Helmholtz Centre Potsdam, GFZ German Research Centre
-for Geosciences and gempa GmbH.
+The original software has been developed by the [GEOFON Program](http://geofon.gfz-potsdam.de)
+at [Helmholtz Centre Potsdam, GFZ German Research Centre for Geosciences](http://www.gfz-potsdam.de)
+and [gempa GmbH](http://www.gempa.de). More information can be found on the 
+[SeisComP homepage](http://www.seiscomp.de) and on the SeisComP [GitHub repository](https://github.com/SeisComP).
 
 ## License
 
 SeisComP is primarily released under the AGPL 3.0. Please check the [license agreement](doc/base/license.rst).
 
-## Asking Questions
-
-Please ask questions in the [forums](https://forum.seiscomp3.org) and
-use appropriate topics to get help on usage or to discuss new features.
-
-If you found a concrete issue in the codes or if you have code related
-questions please use the Github issue tracker of the corresponding
-repository,
-e.g. [GitHub issue tracker of this repository](https://github.com/SeisComP/seiscomp/issues).
-
 ## Checkout the repositories
 
-The SeisComP software collection is distributed among several repositories.
-This repository only contains the build environment, the runtime framework
-(seiscomp control script) and the documentation.
+As noted in the original SeisComP GitHub repository, the software collection is
+distributed among several repositories (all forked here). Please check the README in the
+original SeisComP repository (included here as README-ORIGINAL) on how to combine the
+sources from the different repositories. There you can find an example script that you
+can adapt to the seiscomp-macos case here.
 
-To checkout all repositories to build a complete SeisComP distribution the
-following script can be used:
+## A quick tutorial to compile SeisComP on macOS
 
-```sh
-#!/bin/bash
+seiscomp-macOS installs on:
 
-if [ $# -eq 0 ]
-then
-    echo "$0 <target-directory>"
-    exit 1
-fi
+- macOS High Sierra 10.13.x
+- macOS Mojave 10.14.x
+- macOS Catalina 10.15.x
 
-target_dir=$1
-repo_path=https://github.com/SeisComP
+After compilation seiscomp-macOS will be installed in your Home Directory: ${HOME}/seiscomp
 
-echo "Cloning base repository into $1"
-git clone $repo_path/seiscomp.git $1
+## Pre-Requirements
 
-echo "Cloning base components"
-cd $1/src/base
-git clone $repo_path/seedlink.git
-git clone $repo_path/common.git
-git clone $repo_path/main.git
-git clone $repo_path/extras.git
+- Apple Xcode 9.x or Xcode 10.x or Xcode 11.x (depends on your macOS version) or 
+- the Xcode command-line tools, install with:
+```
+  xcode-select --install
+```
+- Homebrew package manager for macOS
 
-echo "Cloning external base components"
-git clone $repo_path/contrib-gns.git
-git clone $repo_path/contrib-ipgp.git
-git clone $repo_path/contrib-sed.git
+### Install Apple\'s Xcode
 
-echo "Done"
+You can choose to install the developer tools via command-line only (saves space),
+or download Xcode IDE (8GB or more) from Apple\'s App Store for free.
 
-cd ../../
+The command-line works pretty well, so open up `Terminal.app` from Applications > Utilities and type:
+ `xcode-select --install`
 
-echo "If you want to use 'mu', call 'mu register --recursive'"
-echo "To initialize the build, run 'make'."
+### Install Homebrew
+Homebrew is the missing package manager for Mac: [Homebrew Webpage](http://brew.sh)
+
+In Terminal.app copy/paste this command:
+
+`/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"`
+
+All the dependencies packages will be installed in /usr/local/Cellar/
+	
+Check if your system is correctly setup with:
+`brew doctor`
+
+Note: If you have Macports package manager installed it is better to not to mix up with Homebrew.
+or you could rename Macports default directory /opt/local to /opt/local.OFF
+
+### Install seiscomp dependencies
+
+With Homebrew installed, install seiscomp dependencies packages for macOS:
+```
+brew install gcc
+brew install cmake
+brew install flex
+brew install coreutils
 ```
 
-To keep track of the state of each subrepository, [mu-repo](http://fabioz.github.io/mu-repo/)
-is a recommended way.
+Check installed version of OpenSSL with:
+```
+brew list openssl
+```
+It should point to OpenSSL v1.11 and later:
+```
+/usr/local/Cellar/openssl@1.1/1.1.1d/bin/openssl
+/usr/local/Cellar/openssl@1.1/1.1.1d/include/openssl/ (104 files)
+/usr/local/Cellar/openssl@1.1/1.1.1d/lib/libcrypto.1.1.dylib
+/usr/local/Cellar/openssl@1.1/1.1.1d/lib/libssl.1.1.dylib
+....
+```
+
+If an older version is installed (like OpenSSL 1.0), then delete this version
+```
+brew uninstall openssl
+```
+
+Then (re)install latest version of OpenSSL with Homebrew:
+```
+brew install openssl
+```
+
+Install Boost:
+```
+brew install boost
+```
+
+You can also use Boost@1.60 (as we did previously due to compilation issues that are now
+solved), but then you have to adapt the FindBoost.cmake file in the cmake folder to find 
+boost@1.60 for the MACOSX case.
+
+### Install Qt5 for the GUI
+
+Note: macOS 10.13 and later is required for Qt5.
+`brew install qt`
 
 
-## Build
+If you need Qt4 for any reason (macOS < 10.13 ): Qt4 is no longer officialy supported by Homebrew 
+[see homebrew-qt4 page](https://github.com/cartr/homebrew-qt4).
+```
+brew install qt@4
+```
+If this does not work then try with command:
+```
+brew tap cartr/qt4
+brew tap-pin cartr/qt4
+brew install qt@4
+```
 
-### Prerequisites
+### Install MySQL
+The latest Homebrew version installs MySQL8 by default, which used to have some
+upgrade issues with Seiscomp3 InnoDB, but this has been fixed recently. You can also use
+mysql@5.7, that should also work fine.
 
-The following packages should be installed to compile SeisComP:
+```
+brew install mysql
+```
 
-- g++
-- git
-- cmake + cmake-gui
-- libboost
-- libxml2-dev
-- flex
-- libfl-dev
-- libssl-dev
-- crypto-dev
-- python-dev (optional)
-- python-numpy (optional)
-- libqt4-dev (optional)
-- qtbase5-dev (optional)
-- libmysqlclient-dev (optional)
-- libpq-dev (optional)
-- libsqlite3-dev (optional)
-- ncurses-dev (optional)
+Note: for compilation with MySQL 8, you might need the following line in the file 
+usr/local/Cellar/mysql/8.[VERSION]/include/mysql/mysql_com.h:
 
-The Python development libraries are required if Python wrappers should be
-compiled which is the default configuration. The development files must
-match the used Python interpreter of the system. If the system uses Python3
-then Python3 development files must be present in exactly the same version
-as the used Python3 interpreter. The same holds for Python2.
+```
+#include <mysql/udf_registration_types.h>
+```
 
-Python-numpy is required if Numpy support is enable which is also
-the default configuration.
+to
+
+```
+#include "mysql/udf_registration_types.h"
+```
+
+since otherwise you get compilation issues \"mysql/udf_registration_types.h file not found with angled\".
 
 
-### Configuration
+### Configure MySQL at startup
 
-The SeisComP build system provides several build options which can be
-controlled with a cmake gui or from the commandline
-passing `-D[OPTION]=ON|OFF` to cmake.
+Edit the default MYSQL configuration file that should be located in /usr/local/etc/my.cnf.
+For better performance with a MySQL database, adjust the following parameters:
 
-In addition to standard cmake options such as `CMAKE_INSTALL_PREFIX`
-the following global options are available:
+```
+innodb_buffer_pool_size = 64M
+innodb_flush_log_at_trx_commit = 2
+```
 
-|Option|Default|Description|
-|------|-------|-----------|
-|SC_GLOBAL_UNITTESTS|ON|Whether to build unittests or not. If enabled then use `ctest` in the build directory to run the unittests.|
-|SC_GLOBAL_PYTHON_WRAPPER|ON|Build Python wrappers for the C++ libraries. You should not turn off this option unless you know exactly what you are doing.|
-|SC_GLOBAL_PYTHON_WRAPPER_NUMPY|ON|Add Numpy support to Python wrappers. If enabled then all SeisComP arrays will provide a method `numpy()` which returns a Numpy array representation.|
-|SC_ENABLE_CONTRIB|ON|Enable inclusion of external contributions into the build. This includes all directories in `src/extras`.|
-|SC_GLOBAL_GUI|ON|Enables compilation of GUI components. This requires the Qt libraries to be installed. Either Qt4 or Qt5 are supported. The build will prefer Qt5 if found and will fallback to Qt4 if the Qt5 development libraries are not installed on the host system.|
-|SC_GLOBAL_GUI_QT5|ON|If SC_GLOBAL_GUI is enabled then Qt5 support will be enabled if this option is active. Otherwise only Qt4 will be supported.|
+To have launchd start mysql now and restart at login:
+`brew services start mysql`
 
-### Compilation
+Recommended: MySQL Workbench application for macOS.
+MySQL Workbench from Oracle is a free GUI to administer MySQL databases.
+[Install MySQL Workbench from Oracle\'s website](https://dev.mysql.com/downloads/workbench/)
 
-1. Clone all required repositories (see above)
-2. Run ```make```
-3. Configure the build
-4. Press 'c' as long as 'g' appears
-5. Press 'g' to generate the Makefiles
-6. Enter the build directory and run ```make```
+### Build seiscomp for macOS
 
-### Installation
+Having combined all the repositories needed as mentioned above, create the installation
+directory ${HOME}/seiscomp and the build-directory (e.g. builds-seiscomp-macos), like this:
 
-1. Enter the build directory and run ```make install```
-   to install SeisComP
+Create the installation directory in your Home folder:
+```
+mkdir -p ${HOME}/seiscomp
+```
+
+Create the build-directory:
+
+```
+mkdir ~/Downloads/seiscomp-git
+mkdir ~/Downloads/seiscomp-git/builds-seiscomp-macos
+```
+
+Then clone the seiscomp repositories into ~/Downloads/seiscomp-git folder, so that you get
+a subfolder like seiscomp ~/Downloads/seiscomp-git/seiscomp-macos-master.
+Now we are ready to compile seiscomp-macos with GUI manually from the builds directory, like this:
+
+```
+cd builds-seiscomp-macos
+cmake -DCMAKE_PREFIX_PATH=/usr/local/opt/qt/ -DCMAKE_INSTALL_PREFIX=${HOME}/seiscomp -DSC_GLOBAL_GUI_QT5=ON ../seiscomp-macos-master
+make -j 2
+make install
+```
+
+For QT4, you need to pass `SC_GLOBAL_GUI=ON` rather than `SC_GLOBAL_GUI_QT5=ON`.
+
+Note: If you have some specific version of Python required that you would like to use, you can
+either adapt the CMakeLists.txt file to set the necessary paths accordingly or pass the variable
+`Python_VERSION_REQUIRED` to use with cmake, with the version number you would like to use:
+
+```
+cmake -DCMAKE_PREFIX_PATH=/usr/local/opt/qt/ -DCMAKE_INSTALL_PREFIX=${HOME}/seiscomp -DSC_GLOBAL_GUI_QT5=ON -DPython_VERSION_REQUIRED=[VERSION] ../seiscomp3-macos-master`
+```
+
+If everything compiled fine, the files will be installed in ${HOME}/seiscomp.
+
+ 
+### Increase max open files for seedlink on macOS System Startup
+
+To avoid getting seedlink errors when starting seiscomp with \"files open exceed max files ...\",
+increase the max open files on system\'s startup.
+
+Create a plist file named: `limit.seiscomp3-maxfiles.plist` with this content:
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+    "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+<key>Label</key>
+<string>limit.seiscomp3-maxfiles</string>
+<key>ProgramArguments</key>
+<array>
+     <string>launchctl</string>
+     <string>limit</string>
+     <string>maxfiles</string>
+     <string>524288</string>
+     <string>524288</string>
+</array>
+   <key>RunAtLoad</key>
+   <true/>
+   <key>ServiceIPC</key>
+   <false/>
+ </dict>
+</plist>
+```
+
+Place this plist file in /Library/LaunchDaemons/
+
+Then set root:wheel permission with command:
+`sudo chown root:wheel /Library/LaunchDaemons/limit.seiscomp3-maxfiles.plist`
+
+Launch it with command:
+`sudo launchctl load -w /Library/LaunchDaemons/limit.seiscomp3-maxfiles.plist`
+
+### Check SeisComP webpage for the documentation and help
+http://www.seiscomp.de
+
+### Troubleshooting
+
+If you get the -lcrypto compile error:
+`ld error: -lcrypto not found` 
+
+then you need to fix it. Just do a:
+`brew doctor`
+which warns you that /usr/bin occurs befor /usr/local/bin:
+
+`Warning: /usr/bin occurs before /usr/local/bin`
+
+You need to edit your $PATH in ~/.bashrc accordingly so that /usr/local/bin occurs before /usr/bin.
+
+Then in the Terminal, source your ~/.bashrc file:
+`source ~/.bashrc`
+
