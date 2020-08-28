@@ -17,7 +17,12 @@ As noted in the original SeisComP GitHub repository, the software collection is
 distributed among several repositories (all forked here). Please check the README in the
 original SeisComP repository (included here as README-ORIGINAL) on how to combine the
 sources from the different repositories. There you can find an example script that you
-can adapt to the seiscomp-macos case here.
+can adapt to the seiscomp-macos case here. Note that for marking the difference to the
+original repositories, they have been slightly renamed (e.g. main --> seiscomp-main-macos).
+However, in order to build SeisComP, they need to be assembled with the naming as in the
+original version, so when setting up the script to clone the repositories, you should take
+this into account. As noted in the original SeisComP GitHub repository, the software 
+collection is distributed among several repositories (all forked here).
 
 ## A quick tutorial to compile SeisComP on macOS
 
@@ -108,7 +113,7 @@ of ours and then installed boost@1.72. Note that you should in that case not for
 link boost@1.72 so that the link /usr/local/opt/boost@1.72 exists, since cmake is looking
 for that.
 
-### Install Qt5 for the GUI
+### Install Qt5 for the GUIs
 
 Note: macOS 10.13 and later is required for Qt5.
 `brew install qt`
@@ -135,8 +140,8 @@ mysql@5.7, that should also work fine.
 brew install mysql
 ```
 
-Note: for compilation with MySQL 8, you might need the following line in the file 
-usr/local/Cellar/mysql/8.[VERSION]/include/mysql/mysql_com.h:
+Note: for compilation with MySQL 8, you might possibly need to change the following line
+in the file usr/local/Cellar/mysql/8.[VERSION]/include/mysql/mysql_com.h:
 
 ```
 #include <mysql/udf_registration_types.h>
@@ -209,7 +214,7 @@ cmake -DCMAKE_PREFIX_PATH=/usr/local/opt/qt/ -DCMAKE_INSTALL_PREFIX=${HOME}/seis
 If everything compiled fine, the files will be installed in ${HOME}/seiscomp.
 
  
-### Increase max open files for seedlink on macOS System Startup
+### Increase max open files for seedlink on macOS system startup
 
 To avoid getting seedlink errors when starting seiscomp with \"files open exceed max files ...\",
 increase the max open files on system\'s startup.
@@ -247,6 +252,14 @@ Then set root:wheel permission with command:
 
 Launch it with command:
 `sudo launchctl load -w /Library/LaunchDaemons/limit.seiscomp3-maxfiles.plist`
+
+### A note on the GUIs for macOS
+
+On macOS, you need to deactivate the App Nap functionality for the GUIs to operate without
+crashes and peer inactivity errors. To do that easily systemwide, you can use the OnyX
+software (tested with version 3.8.5 on macOS Catalina) to easily do that (tab Parameters
+--> Misc --> Turn off App Nap). Alternatively, you can do that via the command line or
+check out to deactivate App Nap for individual apps.
 
 ### Check SeisComP webpage for the documentation and help
 http://www.seiscomp.de
