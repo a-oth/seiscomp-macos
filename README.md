@@ -21,8 +21,7 @@ can adapt to the seiscomp-macos case here. Note that for marking the difference 
 original repositories, they have been slightly renamed (e.g. main --> seiscomp-main-macos).
 However, in order to build SeisComP, they need to be assembled with the naming as in the
 original version, so when setting up the script to clone the repositories, you should take
-this into account. As noted in the original SeisComP GitHub repository, the software 
-collection is distributed among several repositories (all forked here).
+this into account.
 
 ## A quick tutorial to compile SeisComP on macOS
 
