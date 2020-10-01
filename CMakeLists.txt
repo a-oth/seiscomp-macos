@@ -246,7 +246,7 @@ IF (APPLE)
 	ENDIF(NOT DEFINED CMAKE_C_COMPILER)
 	
 	# clang defaults to C++14 which might break compilation. Setting to C++11 works.
-	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wno-deprecated-declarations")
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wno-deprecated-declarations -Wno-inconsistent-missing-override")
 	
 ENDIF (APPLE)
 
