@@ -32,7 +32,6 @@ OPTION(SC_GLOBAL_PYTHON_WRAPPER_NUMPY "Add Numpy support for Python wrapper" ON)
 OPTION(SC_GLOBAL_PYTHON_WRAPPER_PYTHON3 "Require Python3 interpreter" OFF)
 OPTION(SC_ENABLE_CONTRIB "Enables descending into the contrib directory" ON)
 
-#FIND_PACKAGE(PythonInterp)
 
 # Modified by Adrien Oth <adrien.oth@ecgs.lu>
 # Find python interpreter, macOS support
@@ -47,6 +46,11 @@ IF (APPLE)
 
     SET(PYTHON_EXECUTABLE ${Python_EXECUTABLE})
 ELSE (APPLE)
+	IF(SC_GLOBAL_PYTHON_WRAPPER_PYTHON3)
+		SET(PythonInterp_FIND_VERSION 3)
+		SET(PythonInterp_FIND_VERSION_MAJOR 3)
+		SET(PythonInterp_FIND_VERSION_EXACT 0)
+	ENDIF()
     FIND_PACKAGE(PythonInterp)
 ENDIF (APPLE)  
 
@@ -62,8 +66,12 @@ ENDIF (APPLE)
 #    #SET(PYTHON_LIBRARY     /usr/local/Frameworks/Python.framework/Versions/Current/lib/python3.7/)
 #    #FIND_PACKAGE (Python3 COMPONENTS Interpreter Development)
 #ELSE (APPLE)
-#    FIND_PACKAGE(PythonInterp)
-#ENDIF (APPLE)    
+#	IF(SC_GLOBAL_PYTHON_WRAPPER_PYTHON3)
+#		SET(PythonInterp_FIND_VERSION 3)
+#		SET(PythonInterp_FIND_VERSION_MAJOR 3)
+#		SET(PythonInterp_FIND_VERSION_EXACT 0)
+#	ENDIF()
+#    FIND_PACKAGE(PythonInterp)#ENDIF (APPLE)    
 
 EXEC_PROGRAM(
 	${PYTHON_EXECUTABLE}
