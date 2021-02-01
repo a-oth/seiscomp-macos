@@ -30,13 +30,13 @@ seiscomp-macOS installs on:
 - macOS High Sierra 10.13.x
 - macOS Mojave 10.14.x
 - macOS Catalina 10.15.x
+- macOS Big Sur 11.x
 
 After compilation seiscomp-macOS will be installed in your Home Directory: ${HOME}/seiscomp
 
 ## Pre-Requirements
 
-- Apple Xcode 9.x or Xcode 10.x or Xcode 11.x (depends on your macOS version) or 
-- the Xcode command-line tools, install with:
+- Apple Xcode or the Xcode command-line tools, install with:
 ```
   xcode-select --install
 ```
@@ -103,14 +103,14 @@ Install Boost:
 brew install boost
 ```
 
-Currently there are compilation issues with boost version 1.73. Version 1.72 works fine.
-We therefore included the possibility to pass a version variable `BOOST_VERSION_REQUIRED`
-with cmake in case the user has installed a specific boost version as boost@version.
-Please note that seiscomp does not compile using the easily available version boost@1.60.
-We used the `brew extract` command to extract version 1.72 of boost into a private tap
-of ours and then installed boost@1.72. Note that you should in that case not forget to
-link boost@1.72 so that the link /usr/local/opt/boost@1.72 exists, since cmake is looking
-for that.
+Until recently there were compilation issues with boost version >= 1.73, while version
+1.72 worked fine. This has been resolved now, but we included the possibility to pass a
+version variable `BOOST_VERSION_REQUIRED` with cmake in case the user has installed a
+specific boost version as boost@version. Please note that seiscomp does not compile using
+the easily available version boost@1.60. You can use the `brew extract` command to extract
+a given version of boost into a private tap and then install it, for instance boost@1.72.
+Note that you should in that case not forget to link boost@1.72 so that the link
+/usr/local/opt/boost@1.72 exists, since cmake is looking for that.
 
 ### Install Qt5 for the GUIs
 
